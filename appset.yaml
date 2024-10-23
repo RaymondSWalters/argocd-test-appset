@@ -1,0 +1,28 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: my-appset
+  namespace: argocd
+spec:
+  generators:
+    - git:
+        repoURL: https://github.com/RaymondSWalters/argocd-test-appset
+        revision: main
+        directories:
+          - path: "*/overlays/*" # example `nginx/overlays/prod`
+        values:
+          repoURL: https://github.com/RaymondSWalters/argocd-test-appset
+          targetRevision: main
+          server: https://kubernetes.default.svc
+  template:
+    metadata:
+      name: "{{path[0]}}-{{path[2]}}" # example `nginx-prod`
+    spec:
+      project: "default"
+      source:
+        repoURL: "{{.values.repoURL}}"
+        targetRevision: "{{.values.targetRevision}}"
+        path: "{{path}}"
+      destination:
+        server: "{{.values.server}}"
+        namespace: "{{path[2]}}" # example `prod`\
